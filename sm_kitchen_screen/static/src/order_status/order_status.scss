@@ -1,0 +1,35 @@
+.sm-status {
+    background: #0f1115;
+    color: #e8ebf2;
+
+    .sm-status-title {
+        font-weight: 800;
+        margin-bottom: 14px;
+    }
+
+    .sm-status-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .sm-status-tile {
+        min-width: 190px;
+        padding: 26px 30px;
+        text-align: center;
+        font-size: 3rem;
+        font-weight: 800;
+        border-radius: 12px;
+        animation: sm-status-pop 0.3s ease;
+    }
+
+    .sm-status-ready { background: #15803d; color: #fff; }
+    .sm-status-cooking { background: #374151; color: #d1d5db; }
+
+    .sm-status-none { color: #4b5563; font-size: 1.4rem; }
+
+    @keyframes sm-status-pop {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="sm_kitchen_screen.Status">
+        <div class="sm-status h-100 overflow-auto p-4">
+            <section>
+                <h2 class="sm-status-title">Ready</h2>
+                <div class="sm-status-grid">
+                    <div t-foreach="byStage('ready')" t-as="order" t-key="order.id"
+                         class="sm-status-tile sm-status-ready" t-esc="label(order)"/>
+                </div>
+                <div t-if="!byStage('ready').length" class="sm-status-none">—</div>
+            </section>
+            <section class="mt-4">
+                <h2 class="sm-status-title">Cooking</h2>
+                <div class="sm-status-grid">
+                    <div t-foreach="byStage('cooking')" t-as="order" t-key="order.id"
+                         class="sm-status-tile sm-status-cooking" t-esc="label(order)"/>
+                </div>
+                <div t-if="!byStage('cooking').length" class="sm-status-none">—</div>
+            </section>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="sm_kitchen_screen.Screen">
+        <div class="sm-kitchen h-100 d-flex flex-column">
+            <header class="sm-kitchen-header d-flex align-items-center px-3">
+                <button class="btn sm-kitchen-back me-2" t-on-click="exit">
+                    <i class="oi oi-arrow-left"/>
+                </button>
+                <h4 class="m-0 me-4 text-white" t-esc="props.action.name or 'Kitchen'"/>
+                <nav class="d-flex gap-2">
+                    <t t-foreach="stages" t-as="stage" t-key="stage">
+                        <button class="btn sm-kitchen-tab text-capitalize"
+                                t-att-class="{ 'sm-active': state.stage === stage }"
+                                t-on-click="() => state.stage = stage">
+                            <t t-esc="stage"/>
+                            <span class="badge ms-2"
+                                  t-att-class="{ cooking: 'text-bg-warning', ready: 'text-bg-success', done: 'text-bg-secondary' }[stage]"
+                                  t-esc="count(stage)"/>
+                        </button>
+                    </t>
+                </nav>
+            </header>
+
+            <main class="sm-kitchen-body flex-grow-1 overflow-auto p-3">
+                <div t-if="!visibleOrders.length" class="sm-kitchen-empty">
+                    <i class="fa fa-cutlery d-block mb-3"/>
+                    No orders here. Enjoy the calm.
+                </div>
+                <div class="sm-kitchen-grid">
+                    <t t-foreach="visibleOrders" t-as="order" t-key="order.id">
+                        <article class="sm-order-card" t-att-class="{ 'sm-starred': state.starred[order.id] }">
+                            <div class="sm-order-head d-flex align-items-start justify-content-between">
+                                <button class="btn sm-order-ref" t-on-click="() => this.toggleStar(order)">
+                                    <i class="fa me-1" t-att-class="state.starred[order.id] ? 'fa-star' : 'fa-star-o'"/>
+                                    <span t-esc="order.tracking_number or order.name"/>
+                                </button>
+                                <div class="text-end">
+                                    <span class="sm-chip" t-esc="order.config_name"/>
+                                    <span t-if="order.takeaway" class="sm-chip sm-chip-accent">Takeout</span>
+                                    <span t-if="order.table" class="sm-chip" t-esc="order.table"/>
+                                    <span t-if="order.floating_name" class="sm-chip" t-esc="order.floating_name"/>
+                                    <span class="sm-chip" t-att-class="timerClass(order)">
+                                        <i class="fa fa-clock-o me-1"/><t t-esc="minutes(order)"/>m
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div t-if="order.partner" class="sm-order-partner">
+                                <i class="fa fa-user me-2"/><span t-esc="order.partner.name"/>
+                                <span t-if="order.partner.phone" class="sm-chip ms-2" t-esc="order.partner.phone"/>
+                            </div>
+                            <div t-if="order.general_note" class="sm-order-note">
+                                <i class="fa fa-sticky-note me-1"/><t t-esc="order.general_note"/>
+                            </div>
+
+                            <ul class="sm-order-lines list-unstyled">
+                                <li t-foreach="order.lines" t-as="line" t-key="line.id"
+                                    class="d-flex align-items-center"
+                                    t-att-class="{ 'sm-line-done': line.done }"
+                                    t-on-click="() => this.toggleLine(line)">
+                                    <input type="checkbox" class="form-check-input me-2" t-att-checked="line.done"/>
+                                    <span class="flex-grow-1">
+                                        <t t-esc="line.name"/>
+                                        <span t-if="line.note" class="sm-note-badge" t-esc="line.note"/>
+                                        <span t-if="line.customer_note" class="sm-note-badge" t-esc="line.customer_note"/>
+                                    </span>
+                                    <b class="ms-2" t-esc="line.qty"/>
+                                </li>
+                            </ul>
+
+                            <div class="sm-order-foot d-flex align-items-center">
+                                <button class="btn sm-btn-icon" t-on-click="() => this.printOrder(order)">
+                                    <i class="fa fa-print"/>
+                                </button>
+                                <div class="ms-auto d-flex gap-2">
+                                    <button t-if="order.stage !== 'cooking'" class="btn btn-outline-light"
+                                            t-on-click="() => this.setStage(order, 'cooking')">Cooking</button>
+                                    <button t-if="nextStage(order)" class="btn sm-btn-next text-capitalize"
+                                            t-on-click="() => this.setStage(order, nextStage(order))"
+                                            t-esc="nextStage(order) === 'ready' ? 'Ready' : 'Done'"/>
+                                </div>
+                            </div>
+                        </article>
+                    </t>
+                </div>
+            </main>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sm_kitchen_screen_view_kanban" model="ir.ui.view">
+        <field name="name">sm.kitchen.screen.kanban</field>
+        <field name="model">sm.kitchen.screen</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <templates>
+                    <t t-name="card">
+                        <div class="p-2">
+                            <field name="name" class="fw-bolder fs-4"/>
+                            <field name="pos_config_ids" widget="many2many_tags" class="d-block mt-1"/>
+                            <div class="mt-2">
+                                <button name="action_open_screen" type="object" class="btn btn-secondary btn-sm me-1">Open Screen</button>
+                                <button name="action_open_status" type="object" class="btn btn-secondary btn-sm">Order Status</button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="sm_kitchen_screen_view_form" model="ir.ui.view">
+        <field name="name">sm.kitchen.screen.form</field>
+        <field name="model">sm.kitchen.screen</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_screen" type="object" string="Open Screen" class="btn-primary"/>
+                    <button name="action_open_status" type="object" string="Order Status"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="pos_config_ids" widget="many2many_tags"/>
+                        <field name="pos_categ_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sm_kitchen_screen_view_list" model="ir.ui.view">
+        <field name="name">sm.kitchen.screen.list</field>
+        <field name="model">sm.kitchen.screen</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="pos_config_ids" widget="many2many_tags"/>
+                <field name="pos_categ_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sm_kitchen_screen_action" model="ir.actions.act_window">
+        <field name="name">Kitchen Screen</field>
+        <field name="res_model">sm.kitchen.screen</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first kitchen screen</p>
+            <p>Link it to your POS configurations and product categories, then open it on the kitchen display.</p>
+        </field>
+    </record>
+
+    <menuitem id="sm_kitchen_screen_menu"
+              name="Kitchen Screens"
+              parent="point_of_sale.menu_point_root"
+              action="sm_kitchen_screen_action"
+              sequence="35"/>
+</odoo>
