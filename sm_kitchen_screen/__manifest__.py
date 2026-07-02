@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Kitchen Screen",
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.0",
     "category": "Point of Sale",
     "summary": "Realtime kitchen display for POS orders: cooking/ready/done stages, per-line ticking, order status screen for customers",
     "description": """
