@@ -61,10 +61,12 @@ class KitchenScreen(models.Model):
                     "note": line.note or "",
                     "customer_note": line.customer_note or "",
                     "done": line.sm_kitchen_done,
+                    "price": line.price_subtotal_incl,
                 })
             if not lines:
                 continue
             partner = order.partner_id
+            company = order.company_id
             result.append({
                 "id": order.id,
                 "name": order.pos_reference or order.name,
@@ -72,6 +74,11 @@ class KitchenScreen(models.Model):
                 "date_order": fields.Datetime.to_string(order.date_order),
                 "stage": order.sm_kitchen_stage or "cooking",
                 "config_name": order.config_id.display_name,
+                "amount_total": order.amount_total,
+                "currency_symbol": order.currency_id.symbol or "",
+                "company_id": company.id,
+                "company_name": company.name,
+                "company_has_logo": bool(company.logo),
                 # pos_restaurant-only fields, present only when that module is installed
                 "table": order.table_id.display_name if "table_id" in order._fields and order.table_id else "",
                 "takeaway": bool(order.takeaway) if "takeaway" in order._fields else False,
