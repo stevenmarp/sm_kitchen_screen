@@ -123,12 +123,46 @@ export class KitchenScreen extends Component {
     }
 
     printOrder(order) {
-        const lines = order.lines
-            .map((l) => `${l.qty} x ${l.name}${l.note ? "\n   * " + l.note : ""}${l.customer_note ? "\n   * " + l.customer_note : ""}`)
-            .join("\n");
-        const doc = `${order.config_name}\n${order.name}\n${order.table ? "Table: " + order.table + "\n" : ""}${"-".repeat(32)}\n${lines}\n${"-".repeat(32)}`;
+        const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+        const rows = order.lines
+            .map((l) => {
+                const notes = [l.note, l.customer_note]
+                    .filter(Boolean)
+                    .map((n) => `<div class="note">&#9656; ${esc(n)}</div>`)
+                    .join("");
+                return `<div class="line"><span class="qty">${esc(l.qty)}&times;</span><span class="item">${esc(l.name)}${notes}</span></div>`;
+            })
+            .join("");
+        const now = luxon.DateTime.now().toFormat("dd/MM/yyyy HH:mm");
+        const html = `
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Courier New", monospace; width: 280px; margin: 0 auto; padding: 12px 0; color: #000; }
+    .center { text-align: center; }
+    .shop { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
+    .number { font-size: 42px; font-weight: bold; line-height: 1.1; margin: 4px 0; }
+    .meta { font-size: 12px; margin-bottom: 2px; }
+    .rule { border-top: 1px dashed #000; margin: 10px 0; }
+    .line { display: flex; gap: 8px; font-size: 15px; font-weight: bold; padding: 4px 0; }
+    .qty { min-width: 34px; }
+    .item { flex: 1; }
+    .note { font-size: 12px; font-weight: normal; font-style: italic; margin-top: 1px; }
+    .foot { font-size: 11px; margin-top: 4px; }
+</style>
+<div class="center">
+    <div class="shop">${esc(order.config_name)}</div>
+    <div class="number">${esc(order.tracking_number || order.name)}</div>
+    ${order.table ? `<div class="meta">Table: ${esc(order.table)}</div>` : ""}
+    ${order.partner ? `<div class="meta">${esc(order.partner.name)}</div>` : ""}
+    <div class="meta">${esc(order.name)}</div>
+</div>
+<div class="rule"></div>
+${rows}
+${order.general_note ? `<div class="rule"></div><div class="note">&#9656; ${esc(order.general_note)}</div>` : ""}
+<div class="rule"></div>
+<div class="center foot">${now}</div>`;
         const w = window.open("", "_blank", "width=380,height=600");
-        w.document.write(`<pre style="font-size:16px">${doc.replace(/</g, "&lt;")}</pre>`);
+        w.document.write(html);
         w.document.close();
         w.print();
         w.close();
