@@ -22,8 +22,12 @@ export class KitchenScreen extends Component {
             // ponytail: star lives in memory only; persist on pos.order if
             // highlights must survive a screen reload
             starred: {},
+            sort: "newest",
+            showOverview: false,
         });
         this.stages = STAGES;
+        this.destroyed = false;
+        this.previousOrderIds = new Set();
 
         onWillStart(() => this.load());
 
@@ -32,15 +36,23 @@ export class KitchenScreen extends Component {
 
         this.tick = setInterval(() => (this.state.now = luxon.DateTime.now()), 15000);
         onWillDestroy(() => {
+            this.destroyed = true;
             clearInterval(this.tick);
             clearTimeout(this.loadTimeout);
         });
     }
 
     async load() {
+        if (this.destroyed) return;
         this.state.orders = await this.orm.call("sm.kitchen.screen", "sm_get_orders", [
             this.screenId,
         ]);
+        const newIds = new Set(this.state.orders.map((o) => o.id));
+        const hasNewOrder = [...newIds].some((id) => !this.previousOrderIds.has(id));
+        if (hasNewOrder && this.previousOrderIds.size > 0) {
+            this.playSound();
+        }
+        this.previousOrderIds = newIds;
     }
 
     // bus fires on every pos.order write: debounce the refetch
@@ -51,9 +63,28 @@ export class KitchenScreen extends Component {
 
     get visibleOrders() {
         const orders = this.state.orders.filter((o) => o.stage === this.state.stage);
-        return orders.sort(
-            (a, b) => (this.state.starred[b.id] ? 1 : 0) - (this.state.starred[a.id] ? 1 : 0)
-        );
+        // stars always first
+        orders.sort((a, b) => (this.state.starred[b.id] ? 1 : 0) - (this.state.starred[a.id] ? 1 : 0));
+        // then apply selected sort
+        if (this.state.sort === "oldest") {
+            orders.sort((a, b) => a.id - b.id);
+        } else if (this.state.sort === "name") {
+            orders.sort((a, b) => a.name.localeCompare(b.name));
+        } else if (this.state.sort === "time") {
+            orders.sort((a, b) => this.minutes(a) - this.minutes(b));
+        }
+        return orders;
+    }
+
+    get overview() {
+        const cooking = this.state.orders.filter((o) => o.stage === "cooking");
+        const dish = {};
+        cooking.forEach((o) => {
+            o.lines.forEach((l) => {
+                dish[l.name] = (dish[l.name] || 0) + l.qty;
+            });
+        });
+        return Object.entries(dish).sort((a, b) => b[1] - a[1]);
     }
 
     count(stage) {
@@ -101,6 +132,20 @@ export class KitchenScreen extends Component {
         w.document.close();
         w.print();
         w.close();
+    }
+
+    playSound() {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
     }
 
     exit() {
