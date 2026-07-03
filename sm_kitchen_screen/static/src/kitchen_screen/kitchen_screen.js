@@ -124,32 +124,48 @@ export class KitchenScreen extends Component {
 
     printOrder(order) {
         const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+        const cur = order.currency_symbol || "";
+        const fmt = (v) => `${cur} ${Number(v || 0).toLocaleString()}`;
         const rows = order.lines
             .map((l) => {
                 const notes = [l.note, l.customer_note]
                     .filter(Boolean)
                     .map((n) => `<div class="note">&#9656; ${esc(n)}</div>`)
                     .join("");
-                return `<div class="line"><span class="qty">${esc(l.qty)}&times;</span><span class="item">${esc(l.name)}${notes}</span></div>`;
+                return `<div class="line">
+                    <span class="qty">${esc(l.qty)}&times;</span>
+                    <span class="item">${esc(l.name)}${notes}</span>
+                    <span class="price">${esc(fmt(l.price))}</span>
+                </div>`;
             })
             .join("");
+        const logo = order.company_has_logo
+            ? `<img class="logo" src="/web/image/res.company/${order.company_id}/logo"/>`
+            : "";
         const now = luxon.DateTime.now().toFormat("dd/MM/yyyy HH:mm");
         const html = `
 <style>
+    @page { margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: "Courier New", monospace; width: 280px; margin: 0 auto; padding: 12px 0; color: #000; }
+    body { font-family: "Courier New", monospace; width: 280px; margin: 0 auto; padding: 16px 0; color: #000; }
     .center { text-align: center; }
-    .shop { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
+    .logo { max-width: 120px; max-height: 60px; object-fit: contain; margin-bottom: 6px; }
+    .company { font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .shop { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
     .number { font-size: 42px; font-weight: bold; line-height: 1.1; margin: 4px 0; }
     .meta { font-size: 12px; margin-bottom: 2px; }
     .rule { border-top: 1px dashed #000; margin: 10px 0; }
-    .line { display: flex; gap: 8px; font-size: 15px; font-weight: bold; padding: 4px 0; }
-    .qty { min-width: 34px; }
+    .line { display: flex; gap: 6px; font-size: 13px; font-weight: bold; padding: 4px 0; }
+    .qty { min-width: 28px; }
     .item { flex: 1; }
-    .note { font-size: 12px; font-weight: normal; font-style: italic; margin-top: 1px; }
+    .price { white-space: nowrap; }
+    .note { font-size: 11px; font-weight: normal; font-style: italic; margin-top: 1px; }
+    .total { display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; }
     .foot { font-size: 11px; margin-top: 4px; }
 </style>
 <div class="center">
+    ${logo}
+    <div class="company">${esc(order.company_name || "")}</div>
     <div class="shop">${esc(order.config_name)}</div>
     <div class="number">${esc(order.tracking_number || order.name)}</div>
     ${order.table ? `<div class="meta">Table: ${esc(order.table)}</div>` : ""}
@@ -160,12 +176,24 @@ export class KitchenScreen extends Component {
 ${rows}
 ${order.general_note ? `<div class="rule"></div><div class="note">&#9656; ${esc(order.general_note)}</div>` : ""}
 <div class="rule"></div>
+<div class="total"><span>TOTAL</span><span>${esc(fmt(order.amount_total))}</span></div>
+<div class="rule"></div>
 <div class="center foot">${now}</div>`;
         const w = window.open("", "_blank", "width=380,height=600");
         w.document.write(html);
         w.document.close();
-        w.print();
-        w.close();
+        const go = () => {
+            w.focus();
+            w.print();
+            w.close();
+        };
+        const img = w.document.querySelector("img.logo");
+        if (!img || img.complete) {
+            go();
+        } else {
+            img.onload = go;
+            img.onerror = go;
+        }
     }
 
     playSound() {
