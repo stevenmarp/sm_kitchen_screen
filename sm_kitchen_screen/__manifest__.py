@@ -36,6 +36,6 @@ Realtime kitchen display system for Odoo Point of Sale.
     "installable": True,
     "application": True,
     "auto_install": False,
-    "price": 15.00,
+    "price": 59.66,
     "currency": "USD",
 }
