@@ -26,6 +26,7 @@ Realtime kitchen display system for Odoo Point of Sale.
     "author": "Steven Marp",
     "website": "https://apps.odoo.com/apps/modules/browse?author=Steven Marp",
     "license": "OPL-1",
+    "images": ["static/description/banner.gif"],
     "depends": ["point_of_sale"],
     "data": [
         "security/ir.model.access.csv",
