@@ -3,11 +3,13 @@
 
     <t t-name="sm_kitchen_screen.Screen">
         <div class="sm-kitchen h-100 d-flex flex-column">
-            <header class="sm-kitchen-header d-flex align-items-center px-3">
-                <button class="btn sm-kitchen-back me-2" t-on-click="exit">
-                    <i class="oi oi-arrow-left"/>
-                </button>
-                <h4 class="m-0 me-4 text-white" t-esc="props.action.name or 'Kitchen'"/>
+            <header class="sm-kitchen-header d-flex align-items-center justify-content-between px-3">
+                <div class="d-flex align-items-center">
+                    <button class="btn sm-kitchen-back me-2" t-on-click="exit">
+                        <i class="oi oi-arrow-left"/>
+                    </button>
+                    <h4 class="m-0 text-white" t-esc="props.action.name or 'Kitchen'"/>
+                </div>
                 <nav class="d-flex gap-2">
                     <t t-foreach="stages" t-as="stage" t-key="stage">
                         <button class="btn sm-kitchen-tab text-capitalize"
@@ -20,9 +22,31 @@
                         </button>
                     </t>
                 </nav>
+                <div class="d-flex gap-2 align-items-center">
+                    <select class="form-select form-select-sm" style="width: 120px" t-on-change="(e) => state.sort = e.target.value">
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="name">By Name</option>
+                        <option value="time">By Time</option>
+                    </select>
+                    <button class="btn sm-btn-icon" t-on-click="() => state.showOverview = !state.showOverview">
+                        <i class="fa fa-list"/>
+                    </button>
+                </div>
             </header>
 
             <main class="sm-kitchen-body flex-grow-1 overflow-auto p-3">
+                <div t-if="state.showOverview" class="sm-overview-panel mb-3">
+                    <h5 class="mb-2">Dishes in Preparation</h5>
+                    <div class="sm-overview-grid">
+                        <t t-foreach="overview" t-as="dish" t-key="dish[0]">
+                            <div class="sm-overview-item">
+                                <span t-esc="dish[0]"/>
+                                <span class="sm-overview-count" t-esc="dish[1]"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
                 <div t-if="!visibleOrders.length" class="sm-kitchen-empty">
                     <i class="fa fa-cutlery d-block mb-3"/>
                     No orders here. Enjoy the calm.

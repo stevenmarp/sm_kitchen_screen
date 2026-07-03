@@ -13,14 +13,19 @@ export class KitchenOrderStatus extends Component {
         this.busService = useService("bus_service");
         this.screenId = this.props.action.context.sm_screen_id;
         this.state = useState({ orders: [] });
+        this.destroyed = false;
 
         onWillStart(() => this.load());
         this.busService.addChannel("sm_kitchen_screen");
         this.busService.subscribe("SM_KITCHEN_UPDATE", () => this.scheduleLoad());
-        onWillDestroy(() => clearTimeout(this.loadTimeout));
+        onWillDestroy(() => {
+            this.destroyed = true;
+            clearTimeout(this.loadTimeout);
+        });
     }
 
     async load() {
+        if (this.destroyed) return;
         this.state.orders = await this.orm.call("sm.kitchen.screen", "sm_get_orders", [
             this.screenId,
         ]);
