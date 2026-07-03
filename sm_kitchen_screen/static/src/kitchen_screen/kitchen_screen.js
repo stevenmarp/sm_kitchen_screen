@@ -124,8 +124,6 @@ export class KitchenScreen extends Component {
 
     printOrder(order) {
         const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
-        const cur = order.currency_symbol || "";
-        const fmt = (v) => `${cur} ${Number(v || 0).toLocaleString()}`;
         const rows = order.lines
             .map((l) => {
                 const notes = [l.note, l.customer_note]
@@ -135,7 +133,6 @@ export class KitchenScreen extends Component {
                 return `<div class="line">
                     <span class="qty">${esc(l.qty)}&times;</span>
                     <span class="item">${esc(l.name)}${notes}</span>
-                    <span class="price">${esc(fmt(l.price))}</span>
                 </div>`;
             })
             .join("");
@@ -155,12 +152,10 @@ export class KitchenScreen extends Component {
     .number { font-size: 42px; font-weight: bold; line-height: 1.1; margin: 4px 0; }
     .meta { font-size: 12px; margin-bottom: 2px; }
     .rule { border-top: 1px dashed #000; margin: 10px 0; }
-    .line { display: flex; gap: 6px; font-size: 13px; font-weight: bold; padding: 4px 0; }
+    .line { display: flex; gap: 6px; font-size: 14px; font-weight: bold; padding: 4px 0; }
     .qty { min-width: 28px; }
     .item { flex: 1; }
-    .price { white-space: nowrap; }
     .note { font-size: 11px; font-weight: normal; font-style: italic; margin-top: 1px; }
-    .total { display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; }
     .foot { font-size: 11px; margin-top: 4px; }
 </style>
 <div class="center">
@@ -175,8 +170,6 @@ export class KitchenScreen extends Component {
 <div class="rule"></div>
 ${rows}
 ${order.general_note ? `<div class="rule"></div><div class="note">&#9656; ${esc(order.general_note)}</div>` : ""}
-<div class="rule"></div>
-<div class="total"><span>TOTAL</span><span>${esc(fmt(order.amount_total))}</span></div>
 <div class="rule"></div>
 <div class="center foot">${now}</div>`;
         const w = window.open("", "_blank", "width=380,height=600");
